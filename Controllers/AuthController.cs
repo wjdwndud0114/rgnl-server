@@ -13,7 +13,6 @@ using rgnl_server.Models.Resources;
 
 namespace rgnl_server.Controllers
 {
-    [Authorize(Policy = Constants.Strings.Roles.Admin)]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {

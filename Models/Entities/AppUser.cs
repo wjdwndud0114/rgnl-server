@@ -13,5 +13,6 @@ namespace rgnl_server.Models.Entities
         public virtual Profile Profile { get; set; }
         public virtual ICollection<Relationship> Followers { get; set; }
         public virtual ICollection<Relationship> Following { get; set; }
+        public virtual ICollection<Post> Posts { get; set; }
     }
 }

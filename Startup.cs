@@ -26,7 +26,6 @@ using rgnl_server.Extensions;
 using rgnl_server.Helpers;
 using rgnl_server.Models;
 using rgnl_server.Models.Entities;
-using Profile = AutoMapper.Profile;
 
 namespace rgnl_server
 {
