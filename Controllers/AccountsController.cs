@@ -7,14 +7,12 @@ using rgnl_server.Data;
 using rgnl_server.Helpers;
 using rgnl_server.Models.Entities;
 using rgnl_server.Models.Resources;
-using Profile = rgnl_server.Models.Entities.Profile;
 
 namespace rgnl_server.Controllers
 {
     [Route("api/[controller]")]
     public class AccountsController : ControllerBase
     {
-        private readonly ApplicationDbContext _appDbContext;
         private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
 
@@ -25,7 +23,6 @@ namespace rgnl_server.Controllers
         ) {
             _userManager = userManager;
             _mapper = mapper;
-            _appDbContext = appDbContext;
         }
 
         // POST api/accounts

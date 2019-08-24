@@ -18,7 +18,6 @@ namespace rgnl_server.Controllers
     [Route("api/[controller]/[action]")]
     public class ExternalAuthController : ControllerBase
     {
-        private readonly ApplicationDbContext _appDbContext;
         private readonly UserManager<AppUser> _userManager;
         private readonly FacebookAuthSettings _fbAuthSettings;
         private readonly IJwtFactory _jwtFactory;
@@ -34,7 +33,6 @@ namespace rgnl_server.Controllers
         {
             _fbAuthSettings = fbAuthSettingsAccessor.Value;
             _userManager = userManager;
-            _appDbContext = appDbContext;
             _jwtFactory = jwtFactory;
             _jwtOptions = jwtOptions.Value;
         }

@@ -5,7 +5,6 @@ using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using rgnl_server.Data;
 using rgnl_server.Helpers;
 using rgnl_server.Models.Entities;
@@ -17,12 +16,10 @@ namespace rgnl_server.Controllers.OData
     public class PostController : ODataController
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly UserManager<AppUser> _userManager;
 
         public PostController(ApplicationDbContext dbContext, UserManager<AppUser> userManager)
         {
             _dbContext = dbContext;
-            _userManager = userManager;
         }
 
         [HttpGet]

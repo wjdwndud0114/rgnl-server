@@ -36,7 +36,7 @@ namespace rgnl_server.Controllers.OData
         }
 
         [HttpPatch]
-        public async Task<IActionResult> Patch([FromODataUri] int key, Delta<AppUser> user)
+        public async Task<IActionResult> Patch([FromODataUri] int key, [FromBody] Delta<AppUser> user)
         {
             if (!ModelState.IsValid)
             {
