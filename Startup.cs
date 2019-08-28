@@ -24,8 +24,11 @@ using Newtonsoft.Json.Serialization;
 using rgnl_server.Auth;
 using rgnl_server.Extensions;
 using rgnl_server.Helpers;
+using rgnl_server.Hubs;
+using rgnl_server.Interfaces.Repositories;
 using rgnl_server.Models;
 using rgnl_server.Models.Entities;
+using rgnl_server.Repositories;
 
 namespace rgnl_server
 {
@@ -33,13 +36,13 @@ namespace rgnl_server
     {
         private const string SecretKey = "iNivDmHLpUA323sqsfhqGbMRdRj1PVkH";
         private readonly SymmetricSecurityKey _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SecretKey));
+        private IConfiguration Configuration { get; }
+
 
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -47,6 +50,7 @@ namespace rgnl_server
                 options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), optionsBuilder => optionsBuilder.MigrationsAssembly("rgnl-server")));
 
             services.AddSingleton<IJwtFactory, JwtFactory>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             // Register ConfigurationBuilder instance of FacebookAuthSettings
             services.Configure<FacebookAuthSettings>(Configuration.GetSection(nameof(FacebookAuthSettings)));
@@ -129,6 +133,7 @@ namespace rgnl_server
             });
 
             services.AddOData();
+            services.AddSignalR();
             services.AddAutoMapper(typeof(Startup));
             services.AddMvc()
                 .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver())
@@ -167,6 +172,8 @@ namespace rgnl_server
                         });
                 });
 
+            app.UseSignalR(options => { options.MapHub<PostHub>("/hub"); });
+
             app.UseAuthentication();
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -180,7 +187,7 @@ namespace rgnl_server
             CreateRoles(services).Wait();
         }
 
-        private async Task CreateRoles(IServiceProvider serviceProvider)
+        private static async Task CreateRoles(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
@@ -198,17 +205,43 @@ namespace rgnl_server
                 await roleManager.CreateAsync(new IdentityRole("consumer"));
             }
 
-            var user = await userManager.FindByNameAsync("admin@admin.com");
-            if (user == null)
+            var adminUser = await userManager.FindByNameAsync("admin@admin.com");
+            if (adminUser == null)
             {
-                user = new AppUser
+                adminUser = new AppUser
                 {
                     FirstName = "Kevin",
                     LastName = "Jeong",
                     Email = "admin@admin.com",
                 };
-                await userManager.CreateAsync(user, "Test1234");
-                await userManager.AddToRoleAsync(user, Constants.Strings.Roles.Admin);
+                await userManager.CreateAsync(adminUser, "Test1234");
+                await userManager.AddToRoleAsync(adminUser, Constants.Strings.Roles.Admin);
+            }
+
+            var govUser = await userManager.FindByNameAsync("gov@gov.com");
+            if (govUser == null)
+            {
+                govUser = new AppUser
+                {
+                    FirstName = "Barry",
+                    LastName = "Obama",
+                    Email = "gov@gov.com"
+                };
+                await userManager.CreateAsync(govUser, "Test1234");
+                await userManager.AddToRoleAsync(govUser, Constants.Strings.Roles.Producer);
+            }
+
+            var normalUser = await userManager.FindByNameAsync("gov@gov.com");
+            if (normalUser == null)
+            {
+                normalUser = new AppUser
+                {
+                    FirstName = "Ryan",
+                    LastName = "Smith",
+                    Email = "user@user.com"
+                };
+                await userManager.CreateAsync(normalUser, "Test1234");
+                await userManager.AddToRoleAsync(normalUser, Constants.Strings.Roles.Consumer);
             }
         }
     }

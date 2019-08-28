@@ -11,8 +11,7 @@ namespace rgnl_server.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
-        {
-        }
+        { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,7 +24,7 @@ namespace rgnl_server.Data
                 .BuildTableRelationships();
         }
 
-        public IQueryable<T> NoTrackingSet<T>() where T : class
+        public IQueryable<T> NonTrackingSet<T>() where T : class
         {
             return this.Set<T>().AsNoTracking();
         }

@@ -3,10 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using rgnl_server.Data;
 using rgnl_server.Helpers;
+using rgnl_server.Hubs;
 using rgnl_server.Models.Entities;
 
 namespace rgnl_server.Controllers.OData
@@ -16,17 +17,19 @@ namespace rgnl_server.Controllers.OData
     public class PostController : ODataController
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IHubContext<PostHub> _hubContext;
 
-        public PostController(ApplicationDbContext dbContext, UserManager<AppUser> userManager)
+        public PostController(ApplicationDbContext dbContext, IHubContext<PostHub> hubContext)
         {
             _dbContext = dbContext;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
         [EnableQuery]
         public IQueryable<Post> Get()
         {
-            return _dbContext.NoTrackingSet<Post>();
+            return _dbContext.NonTrackingSet<Post>();
         }
 
         [HttpGet]
@@ -34,7 +37,7 @@ namespace rgnl_server.Controllers.OData
         public SingleResult<Post> Get([FromODataUri] int key)
         {
             return SingleResult.Create(
-                _dbContext.NoTrackingSet<Post>()
+                _dbContext.NonTrackingSet<Post>()
                 .Where(p => p.PostId == key));
         }
 
@@ -51,6 +54,7 @@ namespace rgnl_server.Controllers.OData
             _dbContext.Add(post);
 
             await _dbContext.SaveChangesAsync();
+            await _hubContext.Clients.Group(post.AppUserId.ToString()).SendAsync("NewPostCreated", post);
             return Created(post);
         }
 
@@ -79,25 +83,28 @@ namespace rgnl_server.Controllers.OData
 
             _dbContext.Update(entity);
             await _dbContext.SaveChangesAsync();
+            await _hubContext.Clients.Group(entity.AppUserId.ToString()).SendAsync("PostEdited", entity);
 
             return Updated(entity);
         }
+
         [HttpDelete]
         public async Task<IActionResult> Delete([FromODataUri] int key)
         {
-            if (key != int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value))
+            var post = await _dbContext.TrackingSet<Post>().FindAsync(key);
+
+            if (post == null)
+            {
+                return NotFound();
+            }
+            if (post.AppUserId != int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value))
             {
                 return Unauthorized();
             }
 
-            var user = await _dbContext.TrackingSet<Post>().FindAsync(key);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _dbContext.Remove(user);
+            _dbContext.Remove(post);
             await _dbContext.SaveChangesAsync();
+            await _hubContext.Clients.Group(post.AppUserId.ToString()).SendAsync("PostDeleted", post);
 
             return NoContent();
         }

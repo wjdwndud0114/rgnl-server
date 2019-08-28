@@ -22,18 +22,20 @@ namespace rgnl_server.Controllers
         private readonly FacebookAuthSettings _fbAuthSettings;
         private readonly IJwtFactory _jwtFactory;
         private readonly JwtIssuerOptions _jwtOptions;
-        private static readonly HttpClient Client = new HttpClient();
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public ExternalAuthController(
             IOptions<FacebookAuthSettings> fbAuthSettingsAccessor,
             UserManager<AppUser> userManager,
             ApplicationDbContext appDbContext,
             IJwtFactory jwtFactory,
-            IOptions<JwtIssuerOptions> jwtOptions)
+            IOptions<JwtIssuerOptions> jwtOptions,
+            IHttpClientFactory httpClientFactory)
         {
             _fbAuthSettings = fbAuthSettingsAccessor.Value;
             _userManager = userManager;
             _jwtFactory = jwtFactory;
+            _httpClientFactory = httpClientFactory;
             _jwtOptions = jwtOptions.Value;
         }
 
@@ -42,12 +44,14 @@ namespace rgnl_server.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Facebook([FromBody] FacebookAuthResource model)
         {
+            var client = _httpClientFactory.CreateClient();
+
             // 1.generate an app access token
-            var appAccessTokenResponse = await Client.GetStringAsync($"https://graph.facebook.com/oauth/access_token?client_id={_fbAuthSettings.AppId}&client_secret={_fbAuthSettings.AppSecret}&grant_type=client_credentials");
+            var appAccessTokenResponse = await client.GetStringAsync($"https://graph.facebook.com/oauth/access_token?client_id={_fbAuthSettings.AppId}&client_secret={_fbAuthSettings.AppSecret}&grant_type=client_credentials");
             var appAccessToken = JsonConvert.DeserializeObject<FacebookApiResponses.FacebookAppAccessToken>(appAccessTokenResponse);
 
             // 2. validate the user access token
-            var userAccessTokenValidationResponse = await Client.GetStringAsync($"https://graph.facebook.com/debug_token?input_token={model.AccessToken}&access_token={appAccessToken.AccessToken}");
+            var userAccessTokenValidationResponse = await client.GetStringAsync($"https://graph.facebook.com/debug_token?input_token={model.AccessToken}&access_token={appAccessToken.AccessToken}");
             var userAccessTokenValidation = JsonConvert.DeserializeObject<FacebookApiResponses.FacebookUserAccessTokenValidation>(userAccessTokenValidationResponse);
 
             if (!userAccessTokenValidation.Data.IsValid)
@@ -56,7 +60,7 @@ namespace rgnl_server.Controllers
             }
 
             // 3. we've got a valid token so we can request user data from fb
-            var userInfoResponse = await Client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,picture&access_token={model.AccessToken}");
+            var userInfoResponse = await client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,picture&access_token={model.AccessToken}");
             var userInfo = JsonConvert.DeserializeObject<FacebookApiResponses.FacebookUserData>(userInfoResponse);
 
             // 4. ready to create the local user account (if necessary) and jwt
