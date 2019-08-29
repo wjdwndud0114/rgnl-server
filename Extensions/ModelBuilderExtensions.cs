@@ -18,10 +18,18 @@ namespace rgnl_server.Extensions
                 .HasColumnName(nameof(Profile.LongDescription))
                 .HasColumnType("text")
                 .IsRequired();
-            builder.Entity<Profile>().Property(p => p.ContactInformation)
-                .HasColumnName(nameof(Profile.ContactInformation))
+            builder.Entity<Profile>().Property(p => p.Tags)
+                .HasColumnName(nameof(Profile.Tags))
                 .HasColumnType("text")
-                .IsRequired();
+                .IsRequired(false);
+            builder.Entity<Profile>().Property(p => p.Url)
+                .HasColumnName(nameof(Profile.Url))
+                .HasColumnType("text")
+                .IsRequired(false);
+            builder.Entity<Profile>().Property(p => p.Address)
+                .HasColumnName(nameof(Profile.Address))
+                .HasColumnType("text")
+                .IsRequired(true);
             builder.Entity<Profile>().Property(p => p.AppUserId)
                 .HasColumnName(nameof(Profile.AppUserId))
                 .HasColumnType("int")
