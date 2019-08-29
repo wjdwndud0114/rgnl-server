@@ -13,11 +13,11 @@ namespace rgnl_server.Extensions
             builder.Entity<Profile>().Property(p => p.ShortDescription)
                 .HasColumnName(nameof(Profile.ShortDescription))
                 .HasColumnType("varchar(300)")
-                .IsRequired();
+                .IsRequired(false);
             builder.Entity<Profile>().Property(p => p.LongDescription)
                 .HasColumnName(nameof(Profile.LongDescription))
                 .HasColumnType("text")
-                .IsRequired();
+                .IsRequired(false);
             builder.Entity<Profile>().Property(p => p.Tags)
                 .HasColumnName(nameof(Profile.Tags))
                 .HasColumnType("text")
@@ -26,10 +26,22 @@ namespace rgnl_server.Extensions
                 .HasColumnName(nameof(Profile.Url))
                 .HasColumnType("text")
                 .IsRequired(false);
-            builder.Entity<Profile>().Property(p => p.Address)
-                .HasColumnName(nameof(Profile.Address))
+            builder.Entity<Profile>().Property(p => p.Street)
+                .HasColumnName(nameof(Profile.Street))
                 .HasColumnType("text")
-                .IsRequired(true);
+                .IsRequired(false);
+            builder.Entity<Profile>().Property(p => p.City)
+                .HasColumnName(nameof(Profile.City))
+                .HasColumnType("text")
+                .IsRequired(false);
+            builder.Entity<Profile>().Property(p => p.State)
+                .HasColumnName(nameof(Profile.State))
+                .HasColumnType("text")
+                .IsRequired(false);
+            builder.Entity<Profile>().Property(p => p.Zip)
+                .HasColumnName(nameof(Profile.Zip))
+                .HasColumnType("text")
+                .IsRequired(false);
             builder.Entity<Profile>().Property(p => p.AppUserId)
                 .HasColumnName(nameof(Profile.AppUserId))
                 .HasColumnType("int")
