@@ -7,6 +7,7 @@ namespace rgnl_server.Interfaces.Repositories
 {
     public interface IUserRepository
     {
+        Task<AppUser> GetUser(int userId);
         IQueryable<AppUser> GetGovernmentUsers();
         Task<IEnumerable<AppUser>> FollowedByUser(int userId);
         Task<IEnumerable<AppUser>> FollowingTheUser(int userId);

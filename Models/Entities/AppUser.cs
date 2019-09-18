@@ -14,6 +14,6 @@ namespace rgnl_server.Models.Entities
         public virtual ICollection<Relationship> Followers { get; set; }
         public virtual ICollection<Relationship> Following { get; set; }
         public virtual ICollection<Post> Posts { get; set; }
-        public virtual ICollection<IdentityRole<int>> Roles { get; set; }
+        public virtual ICollection<AppUserRole> Roles { get; set; }
     }
 }

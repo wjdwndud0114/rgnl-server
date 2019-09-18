@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -12,16 +11,26 @@ namespace rgnl_server.Repositories
 {
     public class UserRepository : AppRepository, IUserRepository
     {
-
         public UserRepository(ApplicationDbContext dbContext) : base(dbContext)
-        { }
+        {
+        }
+
+        public Task<AppUser> GetUser(int userId)
+        {
+            return DbContext.NonTrackingSet<AppUser>()
+                .Include(appUser => appUser.Roles)
+                    .ThenInclude(e => e.Role)
+                .Include(appUser => appUser.Profile)
+                .FirstOrDefaultAsync(appUser => appUser.Id == userId);
+        }
 
         public IQueryable<AppUser> GetGovernmentUsers()
         {
             return DbContext.NonTrackingSet<AppUser>()
-                .Include(user => user.Roles)
-                .Include(user => user.Profile)
-                .Where(user => user.Roles.Any(role => role.Name.Equals(Constants.Strings.Roles.Producer)));
+                .Include(appUser => appUser.Roles)
+                    .ThenInclude(e => e.Role)
+                .Include(appUser => appUser.Profile)
+                .Where(appUser => appUser.Roles.Any(role => role.Role.Name.Equals(Constants.Strings.Roles.Producer)));
         }
 
         public async Task<IEnumerable<AppUser>> FollowedByUser(int userId)

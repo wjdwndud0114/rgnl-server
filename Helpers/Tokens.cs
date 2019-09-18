@@ -1,24 +1,26 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using rgnl_server.Auth;
 using rgnl_server.Models;
+using rgnl_server.Models.Resources;
 
 namespace rgnl_server.Helpers
 {
     public class Tokens
     {
-        public static async Task<string> GenerateJwt(ClaimsIdentity identity, IJwtFactory jwtFactory, string userName, JwtIssuerOptions jwtOptions, JsonSerializerSettings serializerSettings)
+        public static async Task<LoginResponseResource> GenerateJwt(ClaimsIdentity identity, IJwtFactory jwtFactory, string userName, JwtIssuerOptions jwtOptions, JsonSerializerSettings serializerSettings)
         {
-            var response = new
+            var response = new LoginResponseResource
             {
-                id = identity.Claims.Single(c => c.Type == Constants.Strings.JwtClaimIdentifiers.Id).Value,
-                auth_token = await jwtFactory.GenerateEncodedToken(userName, identity),
-                expires_in = (int)jwtOptions.ValidFor.TotalSeconds
+                Id = int.Parse(identity.Claims.Single(c => c.Type == Constants.Strings.JwtClaimIdentifiers.Id).Value),
+                AuthToken = await jwtFactory.GenerateEncodedToken(userName, identity),
+                ExpiresIn = (int)jwtOptions.ValidFor.TotalSeconds
             };
 
-            return JsonConvert.SerializeObject(response, serializerSettings);
+            return response;
         }
     }
 }

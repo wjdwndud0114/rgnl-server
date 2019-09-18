@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using rgnl_server.Models.Entities;
 
 namespace rgnl_server.Hubs
 {

@@ -45,8 +45,8 @@ namespace rgnl_server.Controllers
                 return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));
             }
 
-            var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, _jwtOptions, new JsonSerializerSettings { Formatting = Formatting.Indented });
-            return Ok(jwt);
+            var loginJwtToken = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, _jwtOptions, new JsonSerializerSettings { Formatting = Formatting.Indented });
+            return Ok(loginJwtToken);
         }
 
         private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)

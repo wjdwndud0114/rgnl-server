@@ -115,6 +115,20 @@ namespace rgnl_server.Extensions
                 .WithOne(post => post.AppUser)
                 .HasForeignKey(post => post.AppUserId);
 
+            // set up user/role relationship
+            builder.Entity<AppUser>()
+                .HasMany(appUser => appUser.Roles)
+                .WithOne()
+                .HasForeignKey(appUserRole => appUserRole.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<AppUserRole>()
+                .HasOne(appUserRole => appUserRole.Role)
+                .WithMany()
+                .HasForeignKey(appUserRole => appUserRole.RoleId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
             return builder;
         }
     }

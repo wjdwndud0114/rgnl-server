@@ -15,6 +15,6 @@ namespace rgnl_server.Models.Entities
         public string Zip { get; set; }
 
         public int AppUserId { get; set; }
-        public AppUser AppUser { get; set; }
+        public virtual AppUser AppUser { get; set; }
     }
 }

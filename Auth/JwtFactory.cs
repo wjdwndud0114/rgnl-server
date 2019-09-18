@@ -47,9 +47,28 @@ namespace rgnl_server.Auth
 
         public ClaimsIdentity GenerateClaimsIdentity(string userName, int id, IList<string> roles)
         {
-            return new ClaimsIdentity(new GenericIdentity(userName, "Token"), 
-                roles.Select(role => new Claim(ClaimTypes.Role, role))
-                    .Append(new Claim(Constants.Strings.JwtClaimIdentifiers.Id, id.ToString())));
+            IList<Claim> claims = new List<Claim>();
+            foreach (var role in roles)
+            {
+                switch (role)
+                {
+                    case Constants.Strings.Roles.Consumer:
+                        claims.Add(new Claim(ClaimTypes.Role, Constants.Strings.Roles.Consumer));
+                        break;
+                    case Constants.Strings.Roles.Producer:
+                        claims.Add(new Claim(ClaimTypes.Role, Constants.Strings.Roles.Consumer));
+                        claims.Add(new Claim(ClaimTypes.Role, Constants.Strings.Roles.Producer));
+                        break;
+                    case Constants.Strings.Roles.Admin:
+                        claims.Add(new Claim(ClaimTypes.Role, Constants.Strings.Roles.Consumer));
+                        claims.Add(new Claim(ClaimTypes.Role, Constants.Strings.Roles.Producer));
+                        claims.Add(new Claim(ClaimTypes.Role, Constants.Strings.Roles.Admin));
+                        break;
+                }
+            }
+            claims.Add(new Claim(Constants.Strings.JwtClaimIdentifiers.Id, id.ToString()));
+
+            return new ClaimsIdentity(new GenericIdentity(userName, "Token"), claims);
         }
 
         /// <returns>Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).</returns>

@@ -7,7 +7,7 @@ using rgnl_server.Models.Entities;
 
 namespace rgnl_server.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>, int>
+    public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>, int, IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
