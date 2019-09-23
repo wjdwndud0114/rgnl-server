@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rgnl_server.Helpers;
 using rgnl_server.Interfaces.Repositories;
+using rgnl_server.Models.Entities;
 
 namespace rgnl_server.Controllers
 {
@@ -23,6 +24,24 @@ namespace rgnl_server.Controllers
             var userId = int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value);
 
             return Ok(await _userRepository.GetUser(userId));
+        }
+
+        [HttpPost("updateProfile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] Profile newProfile)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value);
+
+            if (newProfile.AppUserId != userId)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(await _userRepository.UpdateProfile(newProfile));
         }
 
         [HttpGet("govs")]

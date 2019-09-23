@@ -11,5 +11,6 @@ namespace rgnl_server.Interfaces.Repositories
         IQueryable<AppUser> GetGovernmentUsers();
         Task<IEnumerable<AppUser>> FollowedByUser(int userId);
         Task<IEnumerable<AppUser>> FollowingTheUser(int userId);
+        Task<AppUser> UpdateProfile(Profile newProfile);
     }
 }

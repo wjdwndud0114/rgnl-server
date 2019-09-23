@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace rgnl_server.Models.Entities
 {
@@ -15,6 +16,7 @@ namespace rgnl_server.Models.Entities
         public string Zip { get; set; }
 
         public int AppUserId { get; set; }
+        [JsonIgnore]
         public virtual AppUser AppUser { get; set; }
     }
 }

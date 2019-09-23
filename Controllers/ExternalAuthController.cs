@@ -60,7 +60,7 @@ namespace rgnl_server.Controllers
             }
 
             // 3. we've got a valid token so we can request user data from fb
-            var userInfoResponse = await client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,picture&access_token={model.AccessToken}");
+            var userInfoResponse = await client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,picture.width(500).height(500)&access_token={model.AccessToken}");
             var userInfo = JsonConvert.DeserializeObject<FacebookApiResponses.FacebookUserData>(userInfoResponse);
 
             // 4. ready to create the local user account (if necessary) and jwt

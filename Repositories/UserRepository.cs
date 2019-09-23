@@ -55,5 +55,32 @@ namespace rgnl_server.Repositories
             return user.Followers
                 .Select(relationship => relationship.Follower);
         }
+
+        public async Task<AppUser> UpdateProfile(Profile delta)
+        {
+            if (delta.ProfileId == 0)
+            {
+                await DbContext.AddAsync(new Profile
+                {
+                    AppUserId = delta.AppUserId,
+                    ShortDescription = delta.ShortDescription,
+                    LongDescription = delta.LongDescription,
+                    Tags = delta.Tags,
+                    Url = delta.Url,
+                    Street = delta.Street,
+                    City = delta.City,
+                    State = delta.State,
+                    Zip = delta.Zip
+                });
+            }
+            else
+            {
+                var profile = delta;
+                DbContext.Update(profile);
+            }
+
+            await DbContext.SaveChangesAsync();
+            return await GetUser(delta.AppUserId);
+        }
     }
 }

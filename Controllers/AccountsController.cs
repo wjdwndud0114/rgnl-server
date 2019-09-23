@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
 using rgnl_server.Data;
 using rgnl_server.Helpers;
 using rgnl_server.Models.Entities;
@@ -46,7 +47,7 @@ namespace rgnl_server.Controllers
             // await _appDbContext.AddAsync<Profile>(new Profile {  });
             // await _appDbContext.SaveChangesAsync();
 
-            return Ok("Account created");
+            return Ok(new { Message = "Account created"});
         }
 
         [HttpPost("gov")]
@@ -69,7 +70,7 @@ namespace rgnl_server.Controllers
             // await _appDbContext.AddAsync<Profile>(new Profile {  });
             // await _appDbContext.SaveChangesAsync();
 
-            return Ok("Account created");
+            return Ok(new { Message = "Account created" });
         }
     }
 }
