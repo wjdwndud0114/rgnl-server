@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rgnl_server.Helpers;
@@ -24,6 +25,14 @@ namespace rgnl_server.Controllers
             var userId = int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value);
 
             return Ok(await _userRepository.GetUser(userId));
+        }
+
+        [HttpGet("posts")]
+        public async Task<IActionResult> GetPosts()
+        {
+            var userId = int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value);
+
+            return Ok(await _userRepository.GetPosts(userId));
         }
 
         [HttpPost("updateProfile")]

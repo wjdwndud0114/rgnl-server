@@ -24,6 +24,17 @@ namespace rgnl_server.Repositories
                 .FirstOrDefaultAsync(appUser => appUser.Id == userId);
         }
 
+        public async Task<IEnumerable<Post>> GetPosts(int userId)
+        {
+            var userIds = (await FollowedByUser(userId)).Select(u => u.Id);
+
+            return DbContext.NonTrackingSet<Post>()
+                .Include(p => p.AppUser)
+                    .ThenInclude(u => u.Profile)
+                .OrderByDescending(p => p.PostId)
+                .Where(p => userId == p.AppUserId || userIds.Contains(p.AppUserId));
+        }
+
         public IQueryable<AppUser> GetGovernmentUsers()
         {
             return DbContext.NonTrackingSet<AppUser>()

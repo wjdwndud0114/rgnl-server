@@ -5,6 +5,7 @@ using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using rgnl_server.Data;
 using rgnl_server.Helpers;
 using rgnl_server.Hubs;
@@ -54,6 +55,7 @@ namespace rgnl_server.Controllers.OData
             _dbContext.Add(post);
 
             await _dbContext.SaveChangesAsync();
+            post.AppUser = await _dbContext.NonTrackingSet<AppUser>().FirstOrDefaultAsync(u => u.Id == post.AppUserId);
             await _hubContext.Clients.Group(post.AppUserId.ToString()).SendAsync("NewPostCreated", post);
             return Created(post);
         }
@@ -67,7 +69,9 @@ namespace rgnl_server.Controllers.OData
                 return BadRequest(ModelState);
             }
 
-            var entity = await _dbContext.TrackingSet<Post>().FindAsync(key);
+            var entity = await _dbContext.TrackingSet<Post>()
+                .Include(e => e.AppUser)
+                .FirstOrDefaultAsync(e => e.PostId == key);
 
             if (entity == null)
             {

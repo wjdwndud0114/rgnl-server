@@ -126,17 +126,22 @@ namespace rgnl_server
             services.AddCors(options =>
             {
                 options.AddPolicy(
-                    "Allow All",
+                    "Allow",
                     policyBuilder => policyBuilder
+                        .WithOrigins(new[]
+                        {
+                            "http://localhost:4200",
+                            "http://198.89.112.8",
+                        })
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowAnyOrigin()
                         .AllowCredentials()
                     );
             });
 
             services.AddOData();
-            services.AddSignalR();
+            services.AddSignalR()
+                .AddJsonProtocol(options => options.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver());
             services.AddAutoMapper(typeof(Startup));
             services.AddMvc(options => { options.EnableEndpointRouting = false; })
                 .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver())
@@ -148,6 +153,7 @@ namespace rgnl_server
         {
             var builder = new ODataConventionModelBuilder();
             builder.EntitySet<AppUser>(nameof(AppUser));
+            builder.EntitySet<Post>(nameof(Post));
 
             return builder.GetEdmModel();
         }
@@ -175,9 +181,8 @@ namespace rgnl_server
                         });
                 });
 
+            app.UseCors("Allow");
             app.UseSignalR(options => { options.MapHub<PostHub>("/hub"); });
-
-            app.UseCors("Allow All");
             app.UseAuthentication();
             app.UseDefaultFiles();
             app.UseStaticFiles();
