@@ -61,8 +61,7 @@ namespace rgnl_server.Controllers.OData
         }
 
         [HttpPatch]
-        [EnableQuery]
-        public async Task<IActionResult> Patch([FromODataUri] int key, Delta<Post> post)
+        public async Task<IActionResult> Patch([FromODataUri] int key, [FromBody] Delta<Post> post)
         {
             if (!ModelState.IsValid)
             {
@@ -87,6 +86,8 @@ namespace rgnl_server.Controllers.OData
 
             _dbContext.Update(entity);
             await _dbContext.SaveChangesAsync();
+            _dbContext.Entry(entity).State = EntityState.Detached;
+            entity.AppUser.Posts = null;
             await _hubContext.Clients.Group(entity.AppUserId.ToString()).SendAsync("PostEdited", entity);
 
             return Updated(entity);
@@ -108,7 +109,7 @@ namespace rgnl_server.Controllers.OData
 
             _dbContext.Remove(post);
             await _dbContext.SaveChangesAsync();
-            await _hubContext.Clients.Group(post.AppUserId.ToString()).SendAsync("PostDeleted", post);
+            await _hubContext.Clients.Group(post.AppUserId.ToString()).SendAsync("PostDeleted", post.PostId);
 
             return NoContent();
         }
