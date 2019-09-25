@@ -26,13 +26,21 @@ namespace rgnl_server.Repositories
 
         public async Task<IEnumerable<Post>> GetPosts(int userId)
         {
-            var userIds = (await FollowedByUser(userId)).Select(u => u.Id);
+            var userIds = DbContext.NonTrackingSet<Relationship>()
+                .Include(r => r.Followee)
+                .ThenInclude(u => u.Profile)
+                .Where(r => r.FollowerId == userId)
+                .Select(r => r.Followee.Id);
 
-            return DbContext.NonTrackingSet<Post>()
+            var posts = await DbContext.NonTrackingSet<Post>()
                 .Include(p => p.AppUser)
                     .ThenInclude(u => u.Profile)
                 .OrderByDescending(p => p.PostId)
-                .Where(p => userId == p.AppUserId || userIds.Contains(p.AppUserId));
+                .Where(p => userId == p.AppUserId || userIds.Contains(p.AppUserId))
+                .ToListAsync();
+
+            posts.ForEach(p => p.AppUser.Posts = null);
+            return posts;
         }
 
         public IQueryable<AppUser> GetGovernmentUsers()
@@ -46,25 +54,26 @@ namespace rgnl_server.Repositories
 
         public async Task<IEnumerable<AppUser>> FollowedByUser(int userId)
         {
-            var user = await DbContext.NonTrackingSet<AppUser>()
-                .Include(appUser => appUser.Following)
-                    .ThenInclude(relationship => relationship.Followee)
-                        .ThenInclude(appUser => appUser.Profile)
-                .FirstOrDefaultAsync(appUser => appUser.Id == userId);
+            var followedUsers = DbContext.NonTrackingSet<Relationship>()
+                .Include(r => r.Followee)
+                .ThenInclude(u => u.Profile)
+                .Where(r => r.FollowerId == userId)
+                .Select(r => r.Followee);
 
-            return user.Following
-                .Select(relationship => relationship.Followee);
+            await followedUsers.ForEachAsync(u => u.Followers = null);
+            return followedUsers;
         }
 
         public async Task<IEnumerable<AppUser>> FollowingTheUser(int userId)
         {
-            var user = await DbContext.NonTrackingSet<AppUser>()
-                .Include(appUser => appUser.Followers)
-                    .ThenInclude(relationship => relationship.Follower)
-                .FirstOrDefaultAsync(appUser => appUser.Id == userId);
+            var followingUsers = DbContext.NonTrackingSet<Relationship>()
+                .Include(r => r.Follower)
+                .ThenInclude(u => u.Profile)
+                .Where(r => r.FolloweeId == userId)
+                .Select(r => r.Follower);
 
-            return user.Followers
-                .Select(relationship => relationship.Follower);
+            await followingUsers.ForEachAsync(u => u.Following = null);
+            return followingUsers;
         }
 
         public async Task<AppUser> UpdateProfile(Profile delta)
