@@ -1,5 +1,6 @@
 using AutoMapper;
 using System;
+using System.IO;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -161,6 +163,18 @@ namespace rgnl_server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider services)
         {
+            app.Use(async (context, next) =>
+            {
+                await next();
+                if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value) &&
+                    !context.Request.Path.Value.StartsWith("api") && !context.Request.Path.Value.StartsWith("odata"))
+                {
+                    context.Request.Path = "/index.html";
+                    context.Response.StatusCode = 200;
+                    await next();
+                }
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -181,17 +195,21 @@ namespace rgnl_server
                         });
                 });
 
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             app.UseCors("Allow");
             app.UseSignalR(options => { options.MapHub<PostHub>("/hub"); });
             app.UseAuthentication();
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
             app.UseMvc(
                 builder =>
                 {
                     builder.MapODataServiceRoute("odata", "odata", GetEdmModel());
                     builder.Expand().Select().OrderBy().Filter().MaxTop(null);
                 });
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             CreateRoles(services).Wait();
         }
