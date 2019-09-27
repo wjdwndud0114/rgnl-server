@@ -102,5 +102,39 @@ namespace rgnl_server.Repositories
             await DbContext.SaveChangesAsync();
             return await GetUser(delta.AppUserId);
         }
+
+        public async Task<bool> FollowUser(int govId, int userId)
+        {
+            var role = await DbContext.NonTrackingSet<AppUserRole>()
+                .FirstOrDefaultAsync(u => u.UserId == govId && u.Role.Name.Equals(Constants.Strings.Roles.Producer));
+
+            if (role == null)
+            {
+                return false;
+            }
+
+            await DbContext.AddAsync(new Relationship
+            {
+                FolloweeId = govId,
+                FollowerId = userId
+            });
+            await DbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UnfollowUser(int govId, int userId)
+        {
+            var relationship = await DbContext.TrackingSet<Relationship>()
+                .FirstOrDefaultAsync(u => u.FolloweeId == govId && u.FollowerId == userId);
+
+            if (relationship == null)
+            {
+                return false;
+            }
+
+            DbContext.Remove(relationship);
+            await DbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

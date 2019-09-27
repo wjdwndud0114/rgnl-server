@@ -74,5 +74,31 @@ namespace rgnl_server.Controllers
 
             return Ok(await _userRepository.FollowingTheUser(userId));
         }
+
+        [HttpPost("follow/{id}")]
+        public async Task<IActionResult> Follow(int id)
+        {
+            var userId = int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value);
+
+            if (await this._userRepository.FollowUser(id, userId))
+            {
+                return Ok();
+            }
+
+            return BadRequest();
+        }
+
+        [HttpPost("unfollow/{id}")]
+        public async Task<IActionResult> Unfollow(int id)
+        {
+            var userId = int.Parse(this.User.FindFirst(Constants.Strings.JwtClaimIdentifiers.Id).Value);
+
+            if (await this._userRepository.UnfollowUser(id, userId))
+            {
+                return Ok();
+            }
+
+            return BadRequest();
+        }
     }
 }

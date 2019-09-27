@@ -13,5 +13,7 @@ namespace rgnl_server.Interfaces.Repositories
         Task<IEnumerable<AppUser>> FollowedByUser(int userId);
         Task<IEnumerable<AppUser>> FollowingTheUser(int userId);
         Task<AppUser> UpdateProfile(Profile newProfile);
+        Task<bool> FollowUser(int govId, int userId);
+        Task<bool> UnfollowUser(int govId, int userId);
     }
 }
