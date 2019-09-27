@@ -167,7 +167,7 @@ namespace rgnl_server
             {
                 await next();
                 if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value) &&
-                    !context.Request.Path.Value.StartsWith("api") && !context.Request.Path.Value.StartsWith("odata"))
+                    !context.Request.Path.Value.StartsWith("api") && !context.Request.Path.Value.StartsWith("odata") && !context.Request.Path.Value.StartsWith("hub"))
                 {
                     context.Request.Path = "/index.html";
                     context.Response.StatusCode = 200;
